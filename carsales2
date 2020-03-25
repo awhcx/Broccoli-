@@ -1,0 +1,39 @@
+from urllib.request import urlopen as uReq
+from bs4 import BeautifulSoup
+from datetime import date
+
+#local html file and parser
+html_file = ""
+total_listing = list()
+for i in range(1, 5):
+    html = open("C:\D\Download\Chrome Downloads\BMW M3 E46 Coupe cars for sale in Australia - carsales.com.au%d%s" % (i, '.html'), encoding="utf8")
+    page_html = BeautifulSoup(html, "html.parser")
+    container1 = page_html.findAll("div", {"class":"listing-item card standard"})
+    container2 = page_html.findAll("div", {"class":"listing-item card showcase"})
+    total_listing = total_listing + container1 + container2
+
+
+filename = "E46 M3.csv"
+f = open(filename, "w")
+
+headers = "Date checked, Make, Model, Car ID, Year, Body type, Transmission, Kilometers, State, Price, Seller\n"
+
+f.write(headers)
+
+for i in range(0, len(total_listing)):
+	container = total_listing[i]
+	date_checked = date.today().strftime("%d/%m/%Y")
+	car_make = container.get("data-webm-make")
+	car_model = container.get("data-webm-model")
+	car_id = container.get("id")
+	year = container.findAll("a", {"data-webm-clickvalue":"sv-title"})[0].text[0:4]
+	body_type = container.findAll("li", {"data-type":"Body Style"})[0].text
+	transmission = container.findAll("li", {"data-type":"Transmission"})[0].text
+	km = container.findAll("li", {"data-type":"Odometer"})[0].text.replace(",","").replace("km","").replace(" ","")
+	car_location = container.get("data-webm-state")
+	car_price = container.get("data-webm-price")
+	sale_type = container.get("data-webm-vehcategory")
+
+	f.write(date_checked + "," + car_make + "," + car_model + "," + car_id + "," + year + "," + body_type + "," + transmission + "," + km + "," + car_location + "," + car_price + "," + sale_type + "\n")
+	
+f.close()
